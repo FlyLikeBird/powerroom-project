@@ -1,0 +1,275 @@
+html {
+    font-size:14px;
+}
+
+:global(#root) {
+    height:100%;
+}
+.container {
+    height:100%;
+    overflow: hidden;
+}
+
+.main-content {
+    height:calc(100% - 60px);
+    background-color:#05050f;
+}
+
+.main-content > div {
+    height:100%;
+}
+// 各个模块通用样式
+.page-container {
+    height:100%;
+    padding:14px;
+    position: relative;
+}
+
+.page-container .left {
+    display:inline-block;
+    vertical-align: top;
+    width:20%;
+    height:100%;
+    padding-right:14px;
+}
+
+.page-container .right {
+    display:inline-block;
+    vertical-align: top;
+    width:80%;
+    height:100%;
+}
+// 卡片容器样式
+.card-container-wrapper {
+    display:block;
+    padding-bottom:14px;
+    height:100%;
+}
+.card-container-wrapper.inline {
+    display:inline-block;
+    vertical-align: top;
+    width:50%;
+    padding-right:14px;
+    padding-bottom:0;
+}
+.card-container-wrapper:last-child {
+    padding:0;
+}
+
+.card-container {
+    height:100%;
+    background-color:#191932;
+    padding:0 14px 14px 14px;
+}
+
+.card-container .card-title {
+    height:32px;
+    line-height:32px;
+    color:#fff;
+}
+
+.card-container .card-content {
+    height:calc(100% - 32px);
+    overflow: hidden auto;
+}
+
+.card-content::-webkit-scrollbar {
+    width:8px;
+    height:1px;
+}
+
+.card-content::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.3);
+}
+
+.card-content::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    background:rgba(255,255,255,0.1);
+}
+
+// ------ 浮动二级菜单样式
+.float-menu-container {
+    position:absolute;
+    left:14px;
+    top:14px;
+    height:calc( 36% - 25px );
+    width:calc( 20% - 20px);
+   
+}
+
+.float-menu-container :global(.ant-menu){
+    border-right:none;
+    background-color:#191932;
+}
+
+.float-menu-container :global(.ant-menu-item){
+    color:#80808e;
+}
+.float-menu-container :global(.ant-menu-item)::after{
+    left:0;
+    right:auto;
+}
+
+.float-menu-container :global(.ant-menu-item):global(.ant-menu-item-active), .float-menu-container :global(.ant-menu-item):global(.ant-menu-item-selected){
+    background-color:#303046;
+    color:#1890ff;
+    font-weight:bold;
+}
+// ------- 浮动二级菜单样式结束
+
+// flex伸缩盒子样式
+.flex-container {
+    display:flex;
+    justify-content: space-between;
+    height:100%;
+} 
+
+.flex-container .flex-item {
+    width:calc((100% - 56px)/5);
+    height:100%;
+}
+
+.flex-container .flex-item .flex-item-title {
+    height:32px;
+    line-height:32px;
+    background-image:linear-gradient(to right, #0a9efe, #3d71fe);
+}
+
+.flex-container .flex-item .flex-item-content {
+    height:calc( 100% - 32px);
+    background-color:#183d6d;
+}
+// 深色树组件样式
+.dark-theme-tree:global(.ant-tree) {
+    background:transparent;
+    color:#e2e2e6;
+}
+
+.dark-theme-tree:global(.ant-tree) :global(.ant-tree-treenode) :global(.ant-tree-iconEle) {
+    width:auto;
+    height:auto;
+}
+
+// 自定义单选框组件样式
+.button-group-container {
+    
+}
+
+.button-group-container .button-group-item {
+    display:inline-block;
+    vertical-align: top;
+    height:32px;
+    line-height:32px;
+    color:#787887;
+    border-bottom:2px solid transparent;
+    margin:0 4px;
+    padding:0 6px;
+    transition:all cubic-bezier(0.645, 0.045, 0.355, 1);
+    cursor: pointer;
+}
+
+.button-group-container .button-group-item:hover {
+    background-color:#303046;
+}
+
+.button-group-container .button-group-item.selected {
+    color:#fff;
+    border-bottom-color:#04a3fe
+}
+
+// 自定义列表组件样式
+.list-container {
+    
+}
+
+.list-container .list-item {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    color:#fff;
+    font-size:1rem;
+    padding:6px 14px;
+    margin:4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.list-container.inline .list-item {
+    display:inline-block;
+    width:50%;
+    vertical-align: top;
+}
+
+.list-container .list-item:hover {
+    background-color:#33335d;
+}
+
+.list-container .list-item.selected {
+    background-color:#04a3fe;
+}
+
+// 内联盒子样式
+.inline-container {
+    height:100%;
+}
+
+.inline-container-main {
+    height:96%;
+}
+
+.inline-container-main .inline-item-wrapper {
+    width:25%;
+    height:25%;
+    display:inline-block;
+    vertical-align: top;
+    padding:0 14px 14px 0;
+}
+
+.inline-container-main .inline-item-wrapper .inline-item {
+    height:100%;
+}
+
+.inline-container-main .inline-item-wrapper .inline-item .inline-item-title {
+    height:32px;
+    line-height:32px;
+    background-image:linear-gradient(to right, #0a9efe, #3d71fe);
+}
+
+.inline-container-main .inline-item-wrapper .inline-item .inline-item-content {
+    height:calc( 100% - 32px);
+    background-color:#183d6d;
+    display:flex;
+    align-items: center;
+}
+
+.inline-container-footer {
+    height:4%;
+}
+
+// 自定义form表单样式
+.custom-form:global(.ant-form) :global(.ant-form-item) :global(.ant-form-item-label) > label {
+    color:#fff;
+}
+
+.custom-form:global(.ant-form) :global(.ant-form-item) :global(.ant-form-item-control-input) input {
+    background-color:transparent;
+    border:1px solid #03a4fe;
+    
+}
+
+.custom-form:global(.ant-form) :global(.ant-form-item) :global(.ant-form-item-control-input) :global(.ant-input-affix-wrapper) {
+    background-color:transparent;
+    border:1px solid #03a4fe;
+}
+
+.custom-form:global(.ant-form) :global(.ant-form-item) :global(.ant-form-item-control-input) :global(.ant-input-affix-wrapper) input{
+    border:none;
+    color:#fff;
+}
+
+
+
+
+

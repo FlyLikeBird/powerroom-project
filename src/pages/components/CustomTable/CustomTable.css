@@ -1,0 +1,19 @@
+.custom-table {
+    border-top:1px solid #a3a3ad;
+    border-left:1px solid #a3a3ad;
+
+}
+
+.custom-table :global(.ant-table-container) :global(.ant-table-content) thead > tr > th {
+    background:#12436f;
+    color:#fff;
+    border-bottom:1px solid #a3a3ad;
+    padding:2px 10px;
+}
+
+.custom-table :global(.ant-table-container) :global(.ant-table-content) tbody > tr > td {
+    background:#191932;
+    color:#a3a3ad;
+    border-bottom:1px solid #a3a3ad;
+    padding:4px 10px;
+}

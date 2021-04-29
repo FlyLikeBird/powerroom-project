@@ -1,0 +1,16 @@
+.container {
+    height:100%;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-size:cover;
+    position:relative;
+    padding:14px;
+}
+
+.left {
+    position:absolute;
+    left:0;
+    top:0;
+    width:20%;
+    height:100%;
+}

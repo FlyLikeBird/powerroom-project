@@ -1,0 +1,40 @@
+.container {
+    height:60px;
+    display:flex;
+    justify-content: space-between;
+    background-color:#191932;
+}
+
+.header-menu-container {
+    height:60px;
+    line-height:60px;
+    background:transparent;
+    border-bottom:none;
+}
+
+.header-menu-container :global(.ant-menu-item) {
+    color:#9a9aa5;
+    height:60px;
+    top:0;
+    vertical-align: top;
+    border-bottom:4px solid transparent;
+}
+
+.header-menu-container :global(.ant-menu-item):global(.ant-menu-item-selected), .header-menu-container :global(.ant-menu-item):global(.ant-menu-item-active) {
+    color:#fff !important;
+    border-bottom:4px solid #1890ff !important;
+    font-size:1rem;
+}
+
+.header-menu-container :global(.ant-menu-item):global(.ant-menu-item-selected) > span {
+    font-size:1.2rem;
+    font-weight:bold;
+}
+
+.weather-container {
+    display:inline-flex;
+    align-items: center;
+    color:#fff;
+}
+
+
