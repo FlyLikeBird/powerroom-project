@@ -16,6 +16,15 @@ const initialState= {
 export default {
     namespace:'global',
     state:initialState,
+    subscriptions:{
+        setup({ dispatch, history }){
+            history.listen(( location )=>{
+                console.log(location);
+                let pathname = location.pathname === '/' ? '/' : location.pathname.slice(1);
+                dispatch({ type:'toggleCurrentMenu', payload:pathname });
+            })
+        }
+    },
     effects:{
         
     },

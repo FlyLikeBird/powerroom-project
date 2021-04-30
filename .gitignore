@@ -9,7 +9,7 @@
 
 # production
 /dist
-
+/.hg
 # misc
 .DS_Store
 
