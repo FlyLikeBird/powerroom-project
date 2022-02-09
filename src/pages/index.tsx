@@ -1,17 +1,24 @@
-import styles from './index.less';
+import { connect } from 'dva';
 import { Link } from 'umi';
 import style from './index.less';
 import Header from './components/Header';
-function IndexPage({ children }) {
+function IndexPage({ children, global }) {
+   
     return (
         <div className={style['container']}>
             <Header />
-            <div className={style['main-content']}>
-                { children }
-            </div>
+            {
+                global.userAuthed
+                ?
+                <div className={style['main-content']}>
+                    { children }
+                </div>
+                :
+                null 
+            }  
         </div>
         
     );
 }
 
-export default IndexPage;
+export default connect(({ global })=>({ global }))(IndexPage);

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<script src="/projects/powerroom-project/node_modules/three/build/three.js"></script>
+<script src="/projects/powerroom-project/node_modules/three/examples/js/controls/OrbitControls.js"></script>
+<script src="/projects/powerroom-project/node_modules/three/examples/js/loaders/OBJLoader.js"></script>
+<script src="/projects/powerroom-project/node_modules/three/examples/js/loaders/MTLLoader.js"></script>
+<script>
+    var _scene,_camera,_control,_render,_ambient,_spotLight;
+    Init();
+    Animate();
+    function Init()
+    {
+        _scene = new THREE.Scene();
+
+        _camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,2000);
+        _camera.position.z = 50;
+
+        _render = new THREE.WebGLRenderer();
+        //设置渲染器大小
+        _render.setSize(window.innerWidth,window.innerHeight);
+        _render.setClearColor(0xd0d4d9, 1);
+
+        //设置渲染器阴影可用
+        _render.shadowMapEnabled = true;
+        document.body.appendChild(_render.domElement);
+
+        //场景控制器，用以控制场景中的摄相机，方便观察场景
+        _control = new THREE.OrbitControls(_camera,_render.domElement);
+
+        //添加环境光
+        _ambient = new THREE.AmbientLight(0xffffff);
+        _scene.add(_ambient);
+        //灯光属性
+        _spotLight = new THREE.SpotLight(0xffffff);
+        _spotLight.castShadow = true;
+        _spotLight.shadowCameraVisible = true;
+        _spotLight.position.set(100,100,100);
+        //设置阴影贴图精度
+        _spotLight.shadowMapWidth = _spotLight.shadowMapHeight = 1024*4;
+        _scene.add(_spotLight);
+        //加载模型
+        LoadModel();
+    }
+    function Animate()
+    {
+        requestAnimationFrame(Animate);
+        Render();
+    }
+    function Render()
+    {
+        //更新摄相机角度
+        _control.update();
+        _render.render(_scene,_camera);
+    }
+    function LoadModel()
+    {
+        const geometry = new THREE.BoxGeometry(30, 30, 30); // 生成几何体
+        const material = new THREE.MeshLambertMaterial({
+          // 生成材质
+          color: 0x00ff00,
+        });
+        const box = new THREE.Mesh(geometry, material);
+        _scene.add(box);
+        //调用OBJMTLLoader加载模型
+        // var loader = new THREE.OBJLoader();
+        // loader.load('Model/tc_tm/tc.obj',
+        // function(obj)
+        
+    }
+</script>
+</body>
+</html>

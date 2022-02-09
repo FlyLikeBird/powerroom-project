@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>threejs-basic-geometry</title>
+    <style>
+        body{
+            font-family: Monospace;
+            background: #f0f0f0;
+            margin: 0px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<!-- <script type="text/javascript" src="build/three.js"></script>
+<script type="text/javascript" src="js/Detector.js"></script>
+<script type="text/javascript" src="js/controls/OrbitControls.js"></script> -->
+<script type="module">
+    import * as THREE from 'https://threejs.org/build/three.module.js';
+    import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+
+    //检测webgl的支持情况
+    // if(!Detector.webgl) {Detector.addGetWebGLMessage();}
+    var container;
+    var camera, scene, renderer;
+    //用于轨道控制器
+    var orbitControls, clock, delta;
+    main();
+    render();
+    //主函数
+    function main(){
+        //添加一个div元素
+        container = document.createElement('div')
+        document.body.appendChild(container);
+        scene = new THREE.Scene();//创建一个新场景
+        //添加一个透视相机
+        camera = new THREE.PerspectiveCamera(60,
+                      window.innerWidth/window.innerHeight, 0.1, 4000);
+        camera.position.set(0, 100, 100);//设置相机位置
+        camera.lookAt(scene.position);//让相机指向原点
+        //渲染器
+        //antialias:true增加抗锯齿效果
+        renderer = new THREE.WebGLRenderer({antialias:true});
+        renderer.setClearColor(new THREE.Color(0x000000));//设置窗口背景颜色为黑
+        renderer.setSize(window.innerWidth, window.innerHeight);//设置窗口尺寸
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        //将renderer关联到container，这个过程类似于获取canvas元素
+        container.appendChild(renderer.domElement);
+        //添加轨道控制器
+        //新建一个轨道控制器
+        orbitControls = new OrbitControls(camera, renderer.domElement);
+        orbitControls.target = new THREE.Vector3(0, 0, 0);//控制焦点
+        orbitControls.autoRotate = false;//将自动旋转关闭
+        clock = new THREE.Clock();//用于更新轨道控制器
+        //给场景添加光源
+        //自然光
+        var ambientLight = new THREE.AmbientLight( 0x817f7f, 0.6 );
+        scene.add( ambientLight );
+//        //平行光源
+//        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+//        directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+//        directionalLight.castShadow = true;
+//        scene.add(directionalLight)
+        // var spotLight = new THREE.SpotLight(0xffffff);
+        // // 光源距离模型距离太远时，不渲染阴影，调整好光源和模型的距离
+        // //spotLight.position.set(-50, 60, 15);
+        // spotLight.position.set(-80, 80, 85);
+        // spotLight.shadow.mapSize.width=512;	//阴影贴图宽度设置为2048像素
+        // spotLight.shadow.mapSize.height=512;	//阴影贴图高度设置为2048像素
+        // // spotLight.position.set(-400, 360, 185);
+        // spotLight.castShadow = true;//允许投射阴影
+        // scene.add(spotLight);
+        // 添加平行光
+        // var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        // // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
+        // directionalLight.position.set(-100, 80, 85);
+        // // 方向光指向对象网格模型mesh2，可以不设置，默认的位置是0,0,0
+        // directionalLight.target = scene;
+        // directionalLight.castShadow = true;
+        // scene.add(directionalLight);
+        // directionalLight.shadowCameraVisible = true;
+        // cube();
+        // 添加点光源
+        var point = new THREE.PointLight(0xffffff);//点光源
+        point.position.set(-80,80,85);
+        point.castShadow = true;
+        point.shadow.mapSize.width=2048;	//阴影贴图宽度设置为2048像素
+        point.shadow.mapSize.height=2048;	//阴影贴图高度设置为2048像素
+        scene.add(point);
+        console.log(scene);
+        tube();
+        sphere();
+        cylinder();
+        plane();
+
+    }
+    // 创建管道
+    function tube(){
+        var curve = new THREE.LineCurve3(new THREE.Vector3(-30, 0, 20), new THREE.Vector3(30, 0, 20));
+        var geometry = new THREE.TubeGeometry(curve, 300, 4, 50, true);
+        var mtl = new THREE.MeshLambertMaterial({ color:0x0000ff });
+        var tubeMesh = new THREE.Mesh(geometry, mtl);
+        tubeMesh.position.set(0, 4, 0 );
+        tubeMesh.castShadow = true;
+        scene.add(tubeMesh);
+    }
+    //创建一个立方体
+    function cube(){
+        var cubeGeo = new THREE.BoxGeometry(20, 20, 20, 5, 5, 5);//创建立方体
+        var cubeMat = new THREE.MeshLambertMaterial({//创建材料
+            color:0x003300,
+            wireframe:false
+        });
+        var cubeMesh = new THREE.Mesh(cubeGeo, cubeMat);//创建立方体网格模型
+        cubeMesh.position.set(15, 30, 0);//设置立方体的坐标
+        cubeMesh.castShadow = true;//允许投射阴影
+        // cubeMesh.receiveShadow = true;//允许接收阴影
+        scene.add(cubeMesh);//将立方体添加到场景中
+    }
+    //创建一个球
+    function sphere(){
+        var sphereGeo = new THREE.SphereGeometry(16, 40, 40);//创建球体
+        var sphereMat = new THREE.MeshLambertMaterial({//创建材料
+            color:0x0000FF,
+            wireframe:false
+        });
+        var sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);//创建球体网格模型
+        sphereMesh.position.set(-25, 16, 0);//设置球的坐标
+        sphereMesh.castShadow = true;//允许投射阴影
+        // sphereMesh.receiveShadow = true;//允许接收阴影
+        scene.add(sphereMesh);//将球体添加到场景
+    }
+    //创建圆柱体
+    function cylinder(){
+        //创建圆柱体
+        var cylinderGeo = new THREE.CylinderGeometry(15, 15 ,40 ,40 ,40);
+        var cylinderMat = new THREE.MeshLambertMaterial({//创建材料
+            color:0xFF6600,
+            wireframe:false
+        });
+        //创建圆柱体网格模型
+        var cylinderMesh = new THREE.Mesh(cylinderGeo, cylinderMat);
+        cylinderMesh.position.set(0, 20, -40);//设置圆柱坐标sphere
+        cylinderMesh.castShadow = true;//允许投射阴影
+        cylinderMesh.receiveShadow = true;//允许接收阴影
+        scene.add(cylinderMesh);//向场景添加圆柱体
+    }
+    //创建一个平面
+    function plane(){
+        var planeGeo = new THREE.PlaneGeometry(100,100,10,10);//创建平面
+        var planeMat = new THREE.MeshLambertMaterial({  //创建材料
+            color:0xFFFFFF,
+            wireframe:false
+        });
+        var planeMesh = new THREE.Mesh(planeGeo, planeMat);//创建网格模型
+        planeMesh.position.set(0, 0, -20);//设置平面的坐标
+        planeMesh.rotation.x = -0.5 * Math.PI;//将平面绕X轴逆时针旋转90度
+        planeMesh.receiveShadow = true;//允许接收阴影
+        scene.add(planeMesh);//将平面添加到场景中
+    }
+    //渲染
+    function render(){
+        delta = clock.getDelta();
+        orbitControls.update(delta);
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getToday } from '../../utils/parseDate';
+import { FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons';
 let timer;
-let week = new Date().getDay();
+
 const weekObj = {
     0:'周日',
     1:'周一',
@@ -12,8 +13,10 @@ const weekObj = {
     6:'周六',
 }
 
+
 function WeatherCom({ weatherInfo }){
     const [curTime, updateTime] = useState(getToday(2));
+    let week = new Date().getDay();
     useEffect(()=>{
         timer = setInterval(()=>{
             updateTime(getToday(2));
@@ -23,9 +26,10 @@ function WeatherCom({ weatherInfo }){
             timer = null;
             week = null;
         }
-    },[])
+    },[]);
     return (
         <div>
+            
             <span>{ curTime + '  '+ `(${weekObj[week]})` }</span>
             {/* <span style={{ margin:'0 10px'}}>{ weatherInfo.city }</span>
             <span>{ weatherInfo.weather }</span> */}

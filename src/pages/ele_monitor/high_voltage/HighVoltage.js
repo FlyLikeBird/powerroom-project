@@ -1,57 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'dva';
-import { Tree } from 'antd';
-import { EyeOutlined, LeftOutlined } from '@ant-design/icons';
+import { Tree, Spin } from 'antd';
+import { EyeOutlined, LeftOutlined, ForkOutlined  } from '@ant-design/icons';
 import ChartContainer from './ChartContainer';
 import style from '../../index.less';
-const treeData = [
-    {
-      title: 'parent 1',
-      key: '0-0',
-      icon:<span><EyeOutlined /><LeftOutlined /></span>,
-      children: [
-        {
-          title: 'parent 1-0',
-          key: '0-0-0',
-          disabled: true,
-          children: [
-            {
-              title: 'leaf',
-              key: '0-0-0-0',
-              disableCheckbox: true,
-            },
-            {
-              title: 'leaf',
-              key: '0-0-0-1',
-            },
-          ],
-        },
-        {
-          title: 'parent 1-1',
-          key: '0-0-1',
-          children: [{ title: <span style={{ color: '#1890ff' }}>sss</span>, key: '0-0-1-0' }],
-        },
-      ],
-    },
-  ];
+import { IconFont } from '@/pages/components/IconFont';
 
-  const list = [
-        { 
-            title:'负荷', 
-            child:[
-                { title:'额定容量', value:500 },
-                { title:'视在功率', value:300 },
-                { title:'负荷率', value:100 },
-                { title:'额定容量', value:500 },
-            ]
-        },
-      { title:'功率'},
-      { title:'电流、电压'},
-      { title:'温度'},
-      { title:'噪声'}
-  ]
-function HighVoltage({ dispatch, ele_monitor, global }){
-    console.log(ele_monitor);
+function HighVoltage({ dispatch, incoming, global }){
+    const { incomingList, currentIncoming } = global;
+    const { incomingInfo, chartInfo, optionType, isLoading } = incoming;
+    useEffect(()=>{
+        new Promise((resolve, reject)=>{
+            dispatch({type:'global/fetchIncoming', payload:{ resolve, reject }})
+        })
+        .then(()=>{
+            dispatch({ type:'incoming/init'});
+        })
+        return ()=>{
+            dispatch({ type:'incoming/cancelAll'});
+        }
+    },[])
     return (
         <div style={{ height:'100%' }}>
             <div className={style['left']}>
@@ -60,12 +28,27 @@ function HighVoltage({ dispatch, ele_monitor, global }){
                     <div className={style['card-container']}>
                         <div className={style['card-title']}>进线选择</div>
                         <div className={style['card-content']}>
-                            <Tree
-                                className={style['dark-theme-tree']}
-                                treeData={treeData}
-                                defaultExpandAll={true}
-                                showIcon={true}
-                            />
+                            {
+                                incomingList.length 
+                                ?
+                                <div className={style['list-container-vertical']}>
+                                    {
+                                        incomingList.map((item,index)=>(
+                                            <div key={index} style={{ textAlign:'center', color: currentIncoming.in_id === item.in_id ? '#03a4fe' : '#a3a3ad'}} onClick={()=>{
+                                                if ( item.in_id !== currentIncoming.in_id ){
+                                                    dispatch({ type:'global/toggleIncoming', payload:item });
+                                                    dispatch({ type:'incoming/init'});
+                                                }          
+                                            }}>
+                                                <div><IconFont style={{ fontSize:'10rem', margin:'10px 0' }} type='iconVector1' /></div>
+                                                <div>{ item.name }</div>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                                :
+                                <Spin className={style['spin']} size='large' />
+                            }
                         </div>
                     </div>
                 </div>
@@ -73,12 +56,14 @@ function HighVoltage({ dispatch, ele_monitor, global }){
             <div className={style['right']}>
                 <div className={style['card-container-wrapper']} style={{ height:'36%'}}>
                     <div className={style['card-container']}>
-                        <div className={style['card-title']}>变压器状态22</div>
+                        <div className={style['card-title']}>进线状态</div>
                         <div className={style['card-content']}>
                             <div className={style['flex-container']}>
                                 {
-                                    list.map((item,index)=>(
-                                        <div className={style['flex-item']}>
+                                    incomingInfo.infoList && incomingInfo.infoList.length 
+                                    ?
+                                    incomingInfo.infoList.map((item,index)=>(
+                                        <div key={index} className={style['flex-item']} style={{ width:'calc((100% - 56px)/5)'}}>
                                             <div className={style['flex-item-title']}>{ item.title }</div>
                                             <div className={style['flex-item-content']}>
                                                 {
@@ -86,17 +71,22 @@ function HighVoltage({ dispatch, ele_monitor, global }){
                                                     ?
                                                     item.child.map((sub)=>(
                                                         <div style={{ height:'16%', display:'flex', alignItems:'center', }}>
+                                                            <div className={style['flex-item-symbol']} style={{ backgroundColor:sub.type === 'A' ? '#eff400' : sub.type === 'B' ? '#00ff00' : sub.type === 'C' ? '#ff0000' : '#01f1e3' }}></div>
                                                             <div>{ sub.title }</div>
                                                             <div style={{ flex:'1', height:'1px', backgroundColor:'#34557e', margin:'0 6px'}}></div>
-                                                            <div>{ sub.value }</div>
+                                                            <div style={{ fontSize:'1.2rem' }}>{ sub.value ? sub.value + ' ' + sub.unit : '-- --' }</div>
                                                         </div>
                                                     ))
                                                     :
                                                     null
+                                                    
+                                                
                                                 }
                                             </div>
                                         </div>
                                     )) 
+                                    :
+                                    <Spin className={style['spin']} size='large' />
                                 }
                             </div>
                         </div>
@@ -104,7 +94,13 @@ function HighVoltage({ dispatch, ele_monitor, global }){
                 </div>
                 <div className={style['card-container-wrapper']} style={{ height:'64%'}}>
                     <div className={style['card-container']}>
-                        <ChartContainer data={{}} global={global} />
+                        {
+                            Object.keys(chartInfo).length 
+                            ?
+                            <ChartContainer data={chartInfo} dispatch={dispatch} startDate={global.startDate} timeType={global.timeType} optionType={optionType} isLoading={isLoading} />
+                            :
+                            <Spin className={style['spin']} size='large' />
+                        }
                     </div>
                 </div>
             </div>
@@ -115,4 +111,4 @@ function HighVoltage({ dispatch, ele_monitor, global }){
     )
 }
 
-export default connect(({ ele_monitor, global })=>({ ele_monitor, global }))(HighVoltage);
+export default connect(({ incoming, global })=>({ incoming, global }))(HighVoltage);

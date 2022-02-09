@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'dva';
 import { Menu } from 'antd';
 import style from '../index.less';
-import RoleManager from './role_manager';
-import UserSetting from './user_setting';
-import LogManager from './log_manager';
+import RoleManager from './role_manager/RoleManager';
+import UserSetting from './user_setting/UserSetting';
+import LogManager from './log_manager/LogManager';
 
 const menuList = [
     { menu_code:'1', menu_name:'角色权限'},
@@ -21,8 +21,8 @@ function SysSetting({ dispatch, global }){
     },[])
     return (
         <div className={style['page-container']}>
-            <div className={style['card-container'] + ' ' + style['float-menu-container']} style={{ height:'calc( 100% - 28px)'}}>
-                <div className={style['card-title']}>导航功能</div>
+            <div className={style['card-container'] + ' ' + style['float-menu-container']} style={{ height:'calc( 100% - 28px)', padding:'0' }}>
+                <div className={style['card-title']} style={{ padding:'0 14px'}}>导航功能</div>
                 <div className={style['card-content']}>
                     <Menu mode='inline' selectedKeys={[subMenu]} onClick={e=>{
                         toggleSubMenu(e.key);

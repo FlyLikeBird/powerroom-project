@@ -28,6 +28,9 @@
 .date-picker-container:global(.ant-picker) :global(.anticon){
     color:#fff;
 }
+.date-picker-container:global(.ant-picker) :global(.ant-picker-input) > input {
+    color:#fff;
+}
 /* 
     日期控件左右切换button 样式
 */

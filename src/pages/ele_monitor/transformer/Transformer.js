@@ -1,71 +1,52 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'dva';
-import { Tree } from 'antd';
+import { Tree, Spin } from 'antd';
 import { EyeOutlined, LeftOutlined } from '@ant-design/icons';
 import ChartContainer from './ChartContainer';
 import style from '../../index.less';
-const treeData = [
-    {
-      title: 'parent 1',
-      key: '0-0',
-      icon:<span><EyeOutlined /><LeftOutlined /></span>,
-      children: [
-        {
-          title: 'parent 1-0',
-          key: '0-0-0',
-          disabled: true,
-          children: [
-            {
-              title: 'leaf',
-              key: '0-0-0-0',
-              disableCheckbox: true,
-            },
-            {
-              title: 'leaf',
-              key: '0-0-0-1',
-            },
-          ],
-        },
-        {
-          title: 'parent 1-1',
-          key: '0-0-1',
-          children: [{ title: <span style={{ color: '#1890ff' }}>sss</span>, key: '0-0-1-0' }],
-        },
-      ],
-    },
-  ];
+import { IconFont } from '@/pages/components/IconFont';
 
-  const list = [
-        { 
-            title:'负荷', 
-            child:[
-                { title:'额定容量', value:500 },
-                { title:'视在功率', value:300 },
-                { title:'负荷率', value:100 },
-                { title:'额定容量', value:500 },
-            ]
-        },
-      { title:'功率'},
-      { title:'电流、电压'},
-      { title:'温度'},
-      { title:'噪声'}
-  ]
-function Transform({ dispatch, ele_monitor, global }){
-    console.log(ele_monitor);
+function Transform({ dispatch, transformer, global }){
+    let { userAuthed } = global;
+    const { transformerInfo, machList, currentMach, isLoading, chartInfo } = transformer;
+    useEffect(()=>{
+        return ()=>{
+            dispatch({ type:'transformer/cancelAll'});
+        }
+    },[])
+    useEffect(()=>{
+        if ( userAuthed ){
+            dispatch({ type:'transformer/initTransformer'});
+        }
+    },[userAuthed])
     return (
         <div style={{ height:'100%' }}>
             <div className={style['left']}>
                 <div className={style['card-container-wrapper']} style={{ height:'36%'}}>占位符</div>
                 <div className={style['card-container-wrapper']} style={{ height:'64%'}}>
                     <div className={style['card-container']}>
-                        <div className={style['card-title']}>进线选择</div>
+                        <div className={style['card-title']}>变压器选择</div>
                         <div className={style['card-content']}>
-                            <Tree
-                                className={style['dark-theme-tree']}
-                                treeData={treeData}
-                                defaultExpandAll={true}
-                                showIcon={true}
-                            />
+                            {
+                                machList && machList.length
+                                ?
+                                <Tree
+                                    className={style['dark-theme-tree']}
+                                    treeData={machList}
+                                    selectedKeys={[currentMach.key]}
+                                    defaultExpandAll={true}
+                                    showIcon={true}
+                                    onSelect={(selectedKeys, {node})=>{
+                                        dispatch({ type:'transformer/toggleMach', payload:{ key:node.key, title:node.title }});
+                                        dispatch({ type:'transformer/fetchTransformerInfo'});
+                                        dispatch({ type:'transformer/fetchMachChartInfo'});
+                                        
+                                    }}
+                                />
+                                :
+                                <Spin className={style['spin']} size='large' />
+                            }
+                            
                         </div>
                     </div>
                 </div>
@@ -74,21 +55,26 @@ function Transform({ dispatch, ele_monitor, global }){
                 <div className={style['card-container-wrapper']} style={{ height:'36%'}}>
                     <div className={style['card-container']}>
                         <div className={style['card-title']}>变压器状态</div>
-                        <div className={style['card-content']}>
-                            <div className={style['flex-container']}>
+                        <div className={style['card-content']}>                             
+                            <div className={style['flex-container']} style={{ position:'relative'}}>
                                 {
-                                    list.map((item,index)=>(
-                                        <div className={style['flex-item']}>
-                                            <div className={style['flex-item-title']}>{ item.title }</div>
+                                    transformerInfo.infoList && transformerInfo.infoList.length
+                                    ?
+                                    transformerInfo.infoList.map((item,index)=>(
+                                        <div key={item.title} className={style['flex-item']} style={{ width:'calc((100% - 42px)/3)'}}>
+                                            <div className={style['flex-item-title']}>
+                                                <IconFont style={{ fontSize:'1.2rem', marginRight:'4px' }} type={ item.title === '负荷' ? 'iconfuhe' : item.title === '功率' ? 'icongongshuai' : item.title === '电流/电压' ? 'icondianya' : ''} />{ item.title }
+                                            </div>
                                             <div className={style['flex-item-content']}>
                                                 {
                                                     item.child && item.child.length 
                                                     ?
                                                     item.child.map((sub)=>(
-                                                        <div style={{ height:'16%', display:'flex', alignItems:'center', }}>
+                                                        <div key={sub.title} style={{ height:'16%', display:'flex', alignItems:'center', }}>
+                                                            <div className={style['flex-item-symbol']} style={{ backgroundColor:sub.type === 'A' ? '#eff400' : sub.type === 'B' ? '#00ff00' : sub.type === 'C' ? '#ff0000' : '#01f1e3' }}></div>
                                                             <div>{ sub.title }</div>
                                                             <div style={{ flex:'1', height:'1px', backgroundColor:'#34557e', margin:'0 6px'}}></div>
-                                                            <div>{ sub.value }</div>
+                                                            <div style={{ fontSize:'1.2rem' }}>{ sub.value ? ( sub.unit === 'cosΦ' ? (+sub.value).toFixed(2) : (+sub.value).toFixed(0))  + ' ' + sub.unit : '-- --' }</div>
                                                         </div>
                                                     ))
                                                     :
@@ -97,14 +83,23 @@ function Transform({ dispatch, ele_monitor, global }){
                                             </div>
                                         </div>
                                     ))
-                                }
+                                    :
+                                    <Spin className={style['spin']} size='large' />                         
+                                }                               
                             </div>
+                            
                         </div>
                     </div>
                 </div>
                 <div className={style['card-container-wrapper']} style={{ height:'64%'}}>
                     <div className={style['card-container']}>
-                        <ChartContainer data={{}} global={global} />
+                        {
+                            Object.keys(chartInfo).length 
+                            ?
+                            <ChartContainer startDate={global.startDate} data={chartInfo} dispatch={dispatch} isLoading={isLoading} timeType={global.timeType} />
+                            :
+                            <Spin className={style['spin']} size='large' />
+                        }
                     </div>
                 </div>
             </div>
@@ -115,4 +110,4 @@ function Transform({ dispatch, ele_monitor, global }){
     )
 }
 
-export default connect(({ ele_monitor, global })=>({ ele_monitor, global }))(Transform);
+export default connect(({ transformer, global })=>({ transformer, global }))(Transform);

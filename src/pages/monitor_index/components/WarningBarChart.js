@@ -4,46 +4,32 @@ import ReactEcharts from 'echarts-for-react';
 function WarningBarChart({ data }){
     let seriesData = [];
     seriesData.push({
-        type:'bar',
+        type:'line',
         name:'电力安全',
         itemStyle:{
-            color: {
-                type: 'linear',
-                x: 0,                 // 左上角x
-                y: 0,                 // 左上角y
-                x2: 0,                // 右下角x
-                y2: 1,                // 右下角y
-                colorStops: [{
-                    offset: 0, color: '#23b7f6' // 0% 处的颜色
-                }, {
-                    offset: 1, color: 'rgba(35, 183, 246,0.6)' // 100% 处的颜色
-                }],
-            },  
+            color:'#23b7f6' 
         },
-        barWidth:10,
-        barGap:'0',
-        data:[10,20,30,40,50,60,70]
+        smooth:true,
+        symbol:'none',
+        areaStyle:{
+            color:'#23b7f6',
+            opacity:0.2
+        },
+        data:data.ele
     });
     seriesData.push({
-        type:'bar',
+        type:'line',
         name:'环境安全',
         itemStyle:{
-            color: {
-                type: 'linear',
-                x: 0,                 // 左上角x
-                y: 0,                 // 左上角y
-                x2: 0,                // 右下角x
-                y2: 1,                // 右下角y
-                colorStops: [{
-                    offset: 0, color: '#ff8481' // 0% 处的颜色
-                }, {
-                    offset: 1, color: 'rgba(255, 132, 129, 0.6)' // 100% 处的颜色
-                }],
-            },  
+            color:'#ff8481' 
         },
-        barWidth:10,
-        barGap:'0',
-        data:[10,20,40,40,70,60,70]
+        smooth:true,
+        symbol:'none',
+        areaStyle:{
+            color:'#ff8481',
+            opacity:0.2
+        },
+        data:data.emv
 
     })
     
@@ -62,6 +48,9 @@ function WarningBarChart({ data }){
                     itemWidth:16,
                     itemHeight:6
                 },
+                tooltip:{
+                    trigger:'axis'
+                },
                 grid:{
                     top:40,
                     left:10,
@@ -79,6 +68,12 @@ function WarningBarChart({ data }){
                         lineStyle:{
                             color:'#999b9d'
                         }
+                    },
+                    axisLabel:{
+                        formatter:(value)=>{
+                            let strArr = value.split('-');
+                            return strArr[1] + '-' + strArr[2];
+                        }
                     }
                 },
                 yAxis:{
@@ -88,6 +83,10 @@ function WarningBarChart({ data }){
                         lineStyle:{
                             color:'#212a2d'
                         }
+                    },
+                    name:'(单位:次)',
+                    nameTextStyle:{
+                        color:'#999b9d'
                     },
                     axisTick:{
                         show:false

@@ -1,32 +1,84 @@
 import React from 'react';
 import ReactEcharts from 'echarts-for-react';
+const richStyle = {
+    'blue':{
+        // width:80,
+        padding:[0,10,0,10],
+        height:20,
+        align:'center',
+        borderWidth:1,
+        color:'#fff',
+        borderColor:'#ff8481',
+        backgroundColor:'rgba(255,132,129,0.4)'
+    },
+    'purple':{
+        // width:80,
+        padding:[0,10,0,10],
+        height:20,
+        color:'#fff',
+        align:'center',
+        borderWidth:1,
+        borderColor:'#23b7f6',
+        backgroundColor:'rgba(35,183,246,0.4)'
+    }
+}
 
 function WarningTrendChart({ data }){
     let seriesData = [];
     seriesData.push({
-        type:'bar',
+        type:'line',
         name:'今日能耗',
         itemStyle:{
-            color:'#04fde7'
+            color:'#ff8481'
         },
-        barWidth:14,
-        data:[10,20,30,40,50,60,70],
-        z:3
+        symbolSize:0,
+        smooth:true,
+        areaStyle:{
+            color:'#ff8481',
+            opacity:0.2
+        },
+        data:data.energy,
+        z:3,
+        markPoint: {
+            data: [
+                {type: 'max', name: '', symbol:'circle', symbolSize:6 },
+                {type: 'min', name: '', symbol:'circle', symbolSize:6 }
+            ],
+            label:{
+                position:[-40,-30],
+                formatter:(params)=>{
+                    return `{blue|${ params.data.type === 'max' ? '最大值' : '最小值'}:${Math.round(params.data.value)}}`;
+                },
+                rich:richStyle
+            }
+        },
     });
     seriesData.push({
         type:'line',
         name:'昨日能耗',
         itemStyle:{
-            color:'#017dc7',
+            color:'#23b7f6',
         },
-        symbol:'none',
+        symbolSize:0,
         smooth:true,
         areaStyle:{
-            color:'#017dc7',
+            color:'#23b7f6',
             opacity:0.2
         },
-        data:[10,20,40,40,70,60,70]
-
+        data:data.sameEnergy,
+        markPoint: {
+            data: [
+                {type: 'max', name: '', symbol:'circle', symbolSize:6 },
+                {type: 'min', name: '', symbol:'circle', symbolSize:6 }
+            ],
+            label:{
+                position:[-40,-30],
+                formatter:(params)=>{
+                    return `{purple|${ params.data.type === 'max' ? '最大值' : '最小值'}:${Math.round(params.data.value)}}`;
+                },
+                rich:richStyle
+            }
+        },
     })
     
     return (
@@ -43,6 +95,9 @@ function WarningTrendChart({ data }){
                     },
                     itemWidth:16,
                     itemHeight:6
+                },
+                tooltip:{
+                    trigger:'axis'
                 },
                 grid:{
                     top:40,
@@ -70,6 +125,13 @@ function WarningTrendChart({ data }){
                         lineStyle:{
                             color:'#212a2d'
                         }
+                    },
+                    name:'(单位:kw)',
+                    nameTextStyle:{
+                        color:'#999b9d'
+                    },
+                    splitLine:{
+                        show:false
                     },
                     axisTick:{
                         show:false

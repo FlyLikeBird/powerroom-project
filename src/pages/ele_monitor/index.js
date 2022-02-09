@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'dva';
 import { Menu } from 'antd';
 import style from '../index.less';
-import Transformer from './transformer';
-import HighVoltage from './high_voltage';
-import EleMonitor from './ele_monitor';
-import TerminalMach from './terminal_mach';
+import Transformer from './transformer/Transformer';
+import HighVoltage from './high_voltage/HighVoltage';
+import EleMonitor from './ele_monitor/EleMonitor';
+import TerminalMach from './terminal_mach/TerminalMach';
+import LineMonitor from './line_monitor/LineMonitor';
 
 const menuList = [
     { menu_code:'1', menu_name:'变压器监测'},
@@ -15,8 +16,7 @@ const menuList = [
     { menu_code:'5', menu_name:'终端监控'},
 ];
 
-console.log(Transformer);
-function EleMonitorManager({ dispatch, global }){
+function EleMonitorManager(){
     const [subMenu, toggleSubMenu] = useState('1');
     useEffect(()=>{
         return ()=>{
@@ -25,8 +25,8 @@ function EleMonitorManager({ dispatch, global }){
     },[])
     return (
         <div className={style['page-container']}>
-            <div className={style['card-container'] + ' ' + style['float-menu-container']}>
-                <div className={style['card-title']}>导航功能</div>
+            <div className={style['card-container'] + ' ' + style['float-menu-container']} style={{ padding:'0' }}>
+                <div className={style['card-title']} style={{ padding:'0 14px'}}>导航功能</div>
                 <div className={style['card-content']}>
                     <Menu mode='inline' selectedKeys={[subMenu]} onClick={e=>{
                         toggleSubMenu(e.key);
@@ -53,6 +53,10 @@ function EleMonitorManager({ dispatch, global }){
                 ?
                 <EleMonitor />
                 :
+                subMenu === '4' 
+                ?
+                <LineMonitor />
+                :
                 subMenu === '5' 
                 ?
                 <TerminalMach />
@@ -63,4 +67,4 @@ function EleMonitorManager({ dispatch, global }){
     )
 }
 
-export default connect(({ global, ele_monitor })=>({ global, ele_monitor }))(EleMonitorManager);
+export default EleMonitorManager;

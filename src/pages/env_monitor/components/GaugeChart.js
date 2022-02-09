@@ -25,6 +25,16 @@ function GaugeChart(){
                         pointer:{
                             width:2,
                         },
+                        axisTick:{
+                            show:false
+                        },
+                        splitLine:{ show:false },
+                        axisLabel:{
+                            show:true,
+                            distance:0,
+                            color:'#fff',
+
+                        },
                         axisLine:{
                             show:true,
                             lineStyle:{

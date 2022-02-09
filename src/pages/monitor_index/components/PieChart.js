@@ -18,8 +18,9 @@ function findData(name, data){
     return result;
 }
 function PieChart({ data }){
-    let seriesData = [], bgData = [];
+    let seriesData = [], bgData = [], total = 0;
     Object.keys(data).forEach(key=>{
+        total += data[key];
         seriesData.push({
             name:statusMaps[key].text,
             value:data[key],
@@ -90,16 +91,35 @@ function PieChart({ data }){
                 series:[{
                     type:'pie',
                     center:['24%','50%'],
-                    radius:['75%', '85%'],
+                    radius:['70%', '80%'],
                     label:{ show:false },
                     labelLine:{ show:false },
-                    data:seriesData
+                    data:seriesData,
+                    label:{
+                        show:true,
+                        position:'center',
+                        formatter:(params)=>{
+                            return `{b|本月告警数}\n{a|${total}次}`
+                        },
+                        rich:{
+                            'a':{
+                                color:'#fff',
+                                fontSize:16,
+                                padding:[0,4,0,0]                                
+                            },
+                            'b':{
+                                color:'#9a9a9a',
+                                fontSize:12,
+                                padding:[6,0,6,0]
+                            }
+                        }
+                    },
                 },
                 {
                     type:'pie',
                     silent:true,
                     center:['24%','50%'],
-                    radius:['55%', '73%'],
+                    radius:['54%', '68%'],
                     label:{ show:false },
                     labelLine:{ show:false },
                     data:bgData

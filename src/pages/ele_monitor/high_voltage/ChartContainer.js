@@ -4,27 +4,44 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import style from '../../index.less';
 import LineChart from '../components/LineChart';
 import CustomDatePicker from '@/pages/components/CustomDatePicker';
-const buttons = [
-    { title:'视在', code:'1' },
-    { title:'有功', code:'2' },
-    { title:'无功', code:'3' },
-    { title:'绕组温度', code:'4' },
-    { title:'负荷率', code:'5' },
+import Loading from '@/pages/components/Loading';
 
-]
-function ChartContainer({ global }){
+const buttons = [
+    { title:'需量', code:'1', unit:'kw' },
+    { title:'电压', code:'2', unit:'V' },
+    { title:'视在', code:'3', unit:'kw' },
+    { title:'有功', code:'4', unit:'kw' },
+    { title:'无功', code:'5', unit:'kvar' },
+    { title:'电流', code:'6', unit:'A' },
+];
+
+function ChartContainer({ data, dispatch, startDate, timeType, optionType, isLoading }){
     return (
-        <div style={{ height:'100%'}}>
-            <div style={{ height:'30px' }} className={style['button-group-container']}>
-                {
-                    buttons.map((item,index)=>(
-                        <div className={style['button-group-item']}>{ item.title }</div>
-                    ))
-                }
+        <div style={{ height:'100%', position:'relative' }}>
+            {
+                isLoading 
+                ?
+                <Loading />
+                :
+                null
+            }
+            <div style={{ display:'flex', alignItems:'center', height:'50px', padding:'6px 0' }}>
+                <div className={style['button-group-container']} style={{ marginRight:'20px' }} >
+                    {
+                        buttons.map((item,index)=>(
+                            <div key={index} className={ item.code === optionType ? style['button-group-item'] + ' ' + style['selected'] : style['button-group-item']} onClick={()=>{
+                                dispatch({ type:'incoming/toggleOptionType', payload:item.code });
+                                dispatch({ type:'incoming/fetchIncomingChart'});
+                            }}>{ item.title }</div>
+                        ))
+                    }
+                </div>
+                <CustomDatePicker onDispatch={()=>{
+                    dispatch({ type:'incoming/fetchIncomingChart'});
+                }} />
             </div>
-            <CustomDatePicker action='highVoltage'/>
-            <div style={{ height:'calc( 100% - 60px)'}}>
-                <LineChart />
+            <div style={{ height:'calc( 100% - 50px)'}}>
+                <LineChart timeType={timeType} startDate={startDate} xData={data.date} yData={data.energy} y2Data={data.energySame} unit={buttons.filter(i=>i.code === optionType)[0].unit } />
             </div>
         </div>
     )
