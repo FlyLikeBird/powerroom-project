@@ -146,9 +146,15 @@ function LineChart({ startDate, timeType, xData, yData, y2Data, unit }){
                     },
                     formatter:name=>{
                         let temp = findMaxAndMin( name === series1 ? yData : y2Data );
-                        let prefixTime = timeType === '1' ? startDate.format('DD') : timeType === '2' ? startDate.format('MM') : timeType === '3' ? startDate.format('YYYY') :'';
-                        let maxTime = prefixTime + '-' + xData[temp.max ? temp.max.index : ''];
-                        let minTime = prefixTime + '-' + xData[temp.min ? temp.min.index : '']; 
+                        let prefixTime = timeType === '1' ? '': timeType === '2' ? startDate.format('MM') : timeType === '3' ? startDate.format('YYYY') :'';
+                        let maxDate = xData[temp.max ? temp.max.index : ''];
+                        let minDate = xData[temp.min ? temp.min.index : ''];
+                        let maxValueArr = maxDate ? (maxDate + '').split('-') :[];
+                        let maxValue = maxValueArr[maxValueArr.length-1];
+                        let minValueArr = minDate ? (minDate + '').split('-') : [];
+                        let minValue = minValueArr[minValueArr.length-1]; 
+                        let maxTime = maxValue ? prefixTime + ( prefixTime ? '-' : '' ) + maxValue : '-- --'; 
+                        let minTime = minValue ? prefixTime + ( prefixTime ? '-' : '') + minValue : '-- --'; 
                         return `
                             {value|${name}}{num|}{time|时间}\n
                             {value|最大值:}{num|${temp.max ? temp.max.value : ''}}{num|${maxTime}}\n

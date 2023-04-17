@@ -47,10 +47,26 @@ function MonitorIndex({ dispatch, global, monitorIndex, children }){
         return ()=>{
             dispatch({ type:'monitorIndex/cancelAll'});
         }
-    },[])
+    },[]);
     return (
         <div className={style['container']} style={{ backgroundImage:`url(${bg})`}}>
             <div style={{ height:'100%', position:'relative' }}>
+                <div className={style['list-container']}>
+                    <div style={{ position:'absolute', left:'0', top:'0' }}>当前配电房: { currentScene.scene_name || '' }</div>
+                    {
+                        sceneList.length 
+                        ?
+                        sceneList.map((item, index)=>(
+                            <div className={style['list-item'] + ' ' + ( item.scene_id === currentScene.scene_id ? style['selected'] : '')} key={item.scene_id} onClick={()=>{
+                                let temp = sceneList.filter(i=>i.scene_id === item.scene_id)[0];
+                                dispatch({ type:'monitorIndex/toggleCurrentScene', payload:{ currentScene:temp, sceneIndex:index + 1 }});
+                                dispatch({ type:'monitorIndex/fetchMonitorInfo'});
+                            }}>{ index + 1 }</div>
+                        ))
+                        :
+                        null
+                    }
+                </div>
                 {/* 左侧悬浮窗 */}
                 <div className={style['left']}>
                     <div className={style['card-container']} style={{ height:'25%' }}>
@@ -72,7 +88,7 @@ function MonitorIndex({ dispatch, global, monitorIndex, children }){
                                     {
                                         monitorInfo.totalInfoList.map((item,index)=>(
                                             <div key={index} className={style['flex-item']}>
-                                                <div className={style['flex-icon']} style={{ backgroundImage:`url(${platformIcons})`, backgroundPosition:`-${index* ( containerWidth <= 1440 ? 24 : 38 )}px 0`}}></div>
+                                                <div className={style['flex-icon']} style={{ backgroundImage:`url(${platformIcons})`, backgroundPosition:`-${index* ( containerWidth < 1440 ? 24 : 38 )}px 0`}}></div>
                                                 <div className={style['flex-content']}>
                                                     <div className={style['flex-text']}>{ item.title }</div>
                                                     <div>
@@ -125,25 +141,6 @@ function MonitorIndex({ dispatch, global, monitorIndex, children }){
                             }
                         </div>
                     </div>
-                    {/* <div className={style['card-container']} style={{ height:'25%' }}>
-                        <div className={style['card-title']}>
-                            <div className={style['card-title-content']}>
-                                <span className={style['symbol']}></span>
-                                <span style={{ margin:'0 6px'}}>本月未处理告警</span>
-                                <span className={style['symbol']}></span>
-                            </div>
-                            <div className={style['symbol2']}></div>
-                        </div>
-                        <div className={style['card-content']}>
-                            {
-                                isLoading
-                                ?
-                                <Spin className={style['spin']} />
-                                :
-                                <MonitorTable data={monitorInfo.warningDetail} />                              
-                            }
-                        </div>
-                    </div> */}
                     <div className={style['card-container']} style={{ height:'25%' }}>
                         <div className={style['card-title']}>
                             <div className={style['card-title-content']}>
@@ -187,7 +184,7 @@ function MonitorIndex({ dispatch, global, monitorIndex, children }){
                                     {
                                         monitorInfo.energyInfoList.map((item,index)=>(
                                             <div className={style['flex-item']} key={index}>
-                                                <div className={style['flex-icon']} style={{ backgroundImage:`url(${energyIcons})`, backgroundPosition:`-${index*( containerWidth <= 1440 ? 24 : 38 )}px 0`}}></div>
+                                                <div className={style['flex-icon']} style={{ backgroundImage:`url(${energyIcons})`, backgroundPosition:`-${index* ( containerWidth < 1440 ? 24 : 38 ) }px 0`}}></div>
                                                 <div className={style['flex-content']}>
                                                     <div className={style['flex-text']} style={{ color:'#04fde7' }}>{ item.title }</div>
                                                     <div>

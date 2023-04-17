@@ -1,22 +1,24 @@
 import React, { useEffect ,useRef, useState } from 'react';
-import { Spin } from 'antd';
+import { Spin, message } from 'antd';
 import * as THREE from 'three';
-import { OrbitControls } from 'three-orbitcontrols';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import { createInfoMesh, updateInfoMesh, createGroundMesh, deleteInfo, checkIsInRect } from '@/pages/utils/models';
+import { createGroundMesh, createSprite, updateSprite } from '@/pages/utils/models';
 import style from './monitorIndex.css';
 
-let machReg = /(\d+)_([a-zA-Z]+)/;
 let frameTimer = null;
+let requestTimer = null;
 let isBack = false;
 let pathMaps = {
     // 西文思
     '3':'feichuan',
     //  胜华电子(惠阳)有限公司
     '36':'shdz',
-    // 德赛电池
-    '38':'desai'
+    // 德赛旧厂
+    '38':'desai',
+    // 德赛新厂
+    '42':'desai'
 }
 
 var cacheModels = {
@@ -32,31 +34,31 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
         grid.material.opacity = 0.3;
         // grid.position.set(0,100,0);
         scene.add(grid);
-        var container = containerRef.current;
+        let container = containerRef.current;
         let width = containerRef.current.offsetWidth;
         let height = containerRef.current.offsetHeight;
         // var axisHelper = new THREE.AxisHelper(100);
         // scene.add(axisHelper);
         // scene.add(axisHelper);
-        // 创建点光源
-        var point = new THREE.PointLight(0xffffff,0.8);
-        point.position.set(0, 400, 100); 
-        scene.add(point);
-        // 创建正面平行光源
-        var directionalLight = new THREE.DirectionalLight(0x226890, 0.8);
+        // 创建环境光
+        var ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        
+       // 创建正面平行光源
+       var directionalLight = new THREE.DirectionalLight(0x96d7fd, 0.8);
         // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
         directionalLight.position.set(0, 300, 800);
         // 方向光指向对象网格模型mesh2，可以不设置，默认的位置是0,0,0
         scene.add(directionalLight); 
         // 创建背面光源
-        var backLight = new THREE.DirectionalLight(0xffffff,0.4);
+        var backLight = new THREE.DirectionalLight(0x96d7fd,0.8);
         backLight.position.set(0,300,-300);
         scene.add(backLight);
         // 创建摄影机对象
         let camera = new THREE.PerspectiveCamera(60, width/height, 0.1, 4000); 
-        camera.up.set(0,1,0);
         camera.position.set(0,680,1000); //设置相机位置
         camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+        scene.add(camera);
         /**
          * 创建渲染器对象
          */
@@ -68,18 +70,18 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
         //执行渲染操作   指定场景、相机作为参数
         function render(){
             renderer.render(scene, camera);
+            requestAnimationFrame(render);
         }
-        let clickMeshs = [];
+        let clickMeshs = [], requestModels = [];
         var raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
         // 所有模型的组合对象
         let group = new THREE.Group();
         let allPromises = [] ;
-
-        //  将obj压缩成gltf格式;
+        //  gltf加载器加载gltf格式模型，先解压缩gltf文件才能正常被three.js解析;
         let dracoLoader = new DRACOLoader();
         let gltfLoader = new GLTFLoader();
-        dracoLoader.setDecoderPath('/draco/gltf/');
+        dracoLoader.setDecoderPath('/draco/');
         dracoLoader.setDecoderConfig({ type:'js' });
         dracoLoader.preload();
         gltfLoader.setDRACOLoader(dracoLoader);
@@ -87,38 +89,32 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
         if ( resourcePath ){
             import(`./options/${resourcePath}/${sceneIndex}.js`)
             .then(module=>{
-                let { loadModels, modelList, layout } = module;
-                for( var i=0;i<loadModels.length;i++){
-                    (function(item){
-                        var promise = new Promise((resolve, reject)=>{
-                            gltfLoader.load(`/static/models/${item.path}`,gltf=>{
-                                cacheModels[item.path] = gltf.scene.children[0];
-                                resolve();
-                            })
-                        });
-                        allPromises.push(promise);
-                    })(loadModels[i])
-                }
+                let { loadModels, layout } = module;
+                loadModels.forEach(item=>{
+                    let promise = new Promise((resolve, reject)=>{
+                        gltfLoader.load(`/static/models/${item.path}`,gltf=>{
+                            cacheModels[item.path] = gltf.scene.children[0];
+                            resolve();
+                        })
+                    })
+                    allPromises.push(promise);
+                })
                 Promise.all(allPromises)
                 .then(()=>{
                     // console.log(cacheModels);
                     layout(cacheModels, group, clickMeshs); 
-                    // console.log(group);  
-                    if ( group.children && group.children.length ){
-                        group.children.forEach(obj=>{                
-                            if ( obj.type === 'Group' ) {
-                                let box = new THREE.Box3();
-                                box.expandByObject(obj);
-                                let width = box.max.x - box.min.x;
-                                let height = box.max.y - box.min.y;
-                                let deep = box.max.z - box.min.z;
-                                let x = box.min.x + width/2;
-                                let y = box.min.y + height;
-                                let z= box.min.z + deep/2;
-                                obj.centerPos = new THREE.Vector3(x, y, z);
+                    console.log(group);  
+                    // 关联了数据接口的模型渲染信息窗口
+                    if ( group.children && group.children.length ) {
+                        group.children.forEach(obj=>{
+                            if ( obj.mach_id ) {
+                                requestModels.push(obj);
+                                let sprite = createSprite(obj, {});
+                                sprite.name = obj.name;
+                                group.add(sprite);
                             }
                         })
-                    }    
+                    } 
                     // 计算总的模型盒子边界并使盒子X轴和Z轴方向居中
                     var groupBox = new THREE.Box3();
                     groupBox.expandByObject(group);
@@ -127,20 +123,37 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
                     group.position.set(-groupBox.min.x - groupWidth/2, 0, -groupBox.min.z-groupDeep/2);
                     // 创建地面模型
                     let groundMesh = createGroundMesh(groupWidth + 200, groupDeep + 200 );
+                   
                     scene.add(group);
                     scene.add(groundMesh);
-                    // render();
-                    animate();
                     toggleLoading(false);
-                    // 添加鼠标移入
-                    window.addEventListener('mousemove', handleMouseOver);
+                    // 指定时间周期调取模型的数据接口
+                    getMachsData(requestModels.map(i=>i.mach_id));
+                    requestTimer = setInterval(()=>{
+                        getMachsData(requestModels.map(i=>i.mach_id));                    
+                    }, 30 * 1000)
                 });
             })
         } else {
             toggleLoading(false);
-            render();
         }
-        
+        function getMachsData(ids){
+            if ( ids.length ) {
+                new Promise((resolve, reject)=>{
+                    dispatch({ type:'monitorIndex/fetchMachsData', payload:{ ids, resolve, reject }})
+                })
+                .then((arr)=>{
+                    let spriteModels = group.children ? group.children.filter(i=>i.type === 'Sprite') : [];
+                    spriteModels.forEach((obj, index)=>{
+                        updateSprite(obj, arr[index]);
+                    })
+                })
+                .catch(msg=>message.error(msg))
+            }   
+        }
+       
+        // 开始渲染
+        render();
         let target = null;
         let prevTarget = null;
         let isEmpty = true;
@@ -189,10 +202,7 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
                                 group.add(createInfoMesh( target, false, data, isBack, 'ele'));
                                 render();
                             })
-                        } else {
-                            // group.add(createInfoMesh(target, false, {}, isBack, 'ele'));
-                            // render();
-                        }
+                        } 
                     } else {
                         if ( target.mach_id ) {
                             new Promise((resolve, reject)=>{
@@ -200,12 +210,8 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
                             })
                             .then((data)=>{
                                 updateInfoMesh(target, infoMesh, 'ele', data, isBack, false);
-                                render();
                             })
-                        } else {
-                            // updateInfoMesh(target, infoMesh, 'ele', {}, isBack, false);
-                            // render();
-                        }
+                        } 
                     }
                 }
                 prevTarget = target;              
@@ -217,32 +223,11 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
                     }
                     prevTarget = null;
                     isEmpty = true;
-                    render();
                 }
             }
         }
-        var controls = new OrbitControls(camera, renderer.domElement);//创建控件对象
-        //监听鼠标、键盘事件
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
-        // 顺时针方向，0 -- Math.PI/2 --- Math.PI --- -Math.PI --- -Math.PI/2 --- 0
-        controls.addEventListener('change', ()=>{
-            // 监听场景的翻转状态
-            // console.log(controls.getAzimuthalAngle());
-            let angle = controls.getAzimuthalAngle();
-            if ( angle > -Math.PI/2 && angle < Math.PI /2 ) {
-                isBack = false;            
-            } else {
-                isBack = true;
-            }
-            render();
-        })
-        function animate() {
-            frameTimer = requestAnimationFrame( animate );         
-            // required if controls.enableDamping or controls.autoRotate are set to true
-            controls.update();
-            renderer.render( scene, camera );
-        }
+        
+        var controls = new OrbitControls(camera, renderer.domElement);//创建控件对象       
         function handleResize(){
             let width = containerRef.current.offsetWidth;
             let height = containerRef.current.offsetHeight;
@@ -252,11 +237,14 @@ function PowerRoomScene({ dispatch, currentCompany, currentScene, sceneIndex, fu
             camera.updateProjectionMatrix();
             // 重新设置渲染器渲染范围
             renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
         }
         window.addEventListener('resize', handleResize);
         return ()=>{
             window.removeEventListener('mousemove', handleMouseOver);
             window.removeEventListener('resize', handleResize);
+            clearInterval(requestTimer);
+            requestTimer = null;
         }
     },[]);
    

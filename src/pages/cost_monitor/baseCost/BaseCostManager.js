@@ -91,7 +91,11 @@ function BaseCostManager({ dispatch, baseCost, global }){
                                 <div className={style['list-container-vertical']}>
                                     {
                                         incomingList.map((item, index)=>(
-                                            <div key={index} style={{ textAlign:'center', color: currentIncoming.in_id === item.in_id ? '#03a4fe' : '#a3a3ad'}}>
+                                            <div key={index} style={{ textAlign:'center', color: currentIncoming.in_id === item.in_id ? '#03a4fe' : '#a3a3ad'}} onClick={()=>{
+                                                let temp = incomingList.filter(i=>i.in_id === currentIncoming.in_id )[0];
+                                                dispatch({ type:'global/toggleIncoming', payload:temp });
+                                                dispatch({ type:'baseCost/fetchBaseCost'});
+                                            }}>
                                                 <div><IconFont style={{ fontSize:'10rem', margin:'10px 0' }} type='iconVector1' /></div>
                                                 <div>{ item.name }</div>
                                             </div>

@@ -90,7 +90,7 @@ function AlarmCom({ msg }){
                 }} />
             }
             <AlertOutlined style={{ marginRight:'6px', fontSize:'1.2rem' }} onClick={()=>{
-                history.push('/data_report?sub=4');
+                history.push('/data_report' + `${ window.location.search ? window.location.search + '&&sub=4' : '?sub=4'}`);
             }} />
             <Popover content={<ScrollTable data={ msg.detail || []}/>}>
                 <Badge count={msg.count} onClick={()=>{}} />

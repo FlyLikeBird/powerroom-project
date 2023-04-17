@@ -41,7 +41,6 @@ function ChartContainer({ data, dispatch, isLoading, startDate, timeType }){
         }
         setSourceData(temp);
     },[option]);
-    console
     return (
         <div style={{ height:'100%', position:'relative' }}>
             {

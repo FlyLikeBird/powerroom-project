@@ -185,8 +185,8 @@ function LineChart({ xData, energy, energyA, energyB, energyC, info, startDate, 
                         formatter:name=>{
                             let temp = findMaxAndMin( name === '总' + info.title ? energy  : name === 'A相' ? energyA : name === 'B相' ? energyB : name === 'C相' ? energyC : '', optionType === '5' ? true : false );
                             let prefixTime = timeType === '1' ? '' : timeType === '2' ? startDate.format('MM') : timeType === '3' ? startDate.format('YYYY') :'';
-                            let maxTime = prefixTime + '-' + xData[temp.max ? temp.max.index : ''];                        
-                            let minTime = prefixTime + '-' + xData[temp.min ? temp.min.index : '']; 
+                            let maxTime = prefixTime + ( prefixTime ? '-' : '') + xData[temp.max ? temp.max.index : ''];                        
+                            let minTime = prefixTime + ( prefixTime ? '-' : '') + xData[temp.min ? temp.min.index : '']; 
                             return `
                                 {value|${name}}{num|}{time|时间}\n
                                 {value|最大值:}{num|${temp.max ? temp.max.value : ''}}{num|${maxTime}}\n

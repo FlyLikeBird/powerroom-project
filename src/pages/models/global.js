@@ -1,20 +1,21 @@
-import { getFieldList, getFieldAttrs, getIncoming, getUserLogin, getThirdAgent, getUserInfo } from '../services/globalService';
+import { getFieldList, getFieldAttrs, getIncoming, getUserLogin, getThirdAgent, userAuth, agentUserAuth } from '../services/globalService';
 import moment from 'moment';
 import { history } from 'umi';
 import { md5 } from '../utils/encryption';
 import config from '../../../config';
-const env = config.apiHost === 'api.h1dt.com' ? 'prod' : 'dev';
 const agentReg = /pr-(.*)/;
+const companyReg =  /\?pid\=0\.\d+&&userId=(\d+)&&companyId=(\d+)&&mode=(\w+)/;
 
 // 初始化socket对象，并且添加监听事件
-function createWebSocket(url, data, companyId, dispatch){
+function createWebSocket(url, data, companyId, fromAgent, dispatch){
     let ws = new WebSocket(url);
     // console.log(data);
     ws.onopen = function(){
-        if ( data.agent_id){
+        if ( data.agent_id && !fromAgent ){
             ws.send(`agent:${data.agent_id}`);
+        } else {
+            ws.send(`com:${companyId}`);
         }
-        ws.send(`com:${companyId}`);
     };
     // ws.onclose = function(){
     //     console.log('socket close...');
@@ -43,7 +44,7 @@ function reconnect(url, data, companyId, dispatch){
     setTimeout(()=>{
         createWebSocket(url, data, companyId, dispatch);
         reconnect.lock = false;
-    },2000)
+    },30000)
 }
 let date = new Date();
 let socket = null;
@@ -71,7 +72,9 @@ const initialState= {
     currentIncoming:{},
     containerWidth:0,
     pagesize:12,
+    fromAgent:false,
     userAuthed:false,
+    isFrame:false,
     thirdAgent:{}
 };
 let apiHost = '120.25.168.203';     
@@ -95,7 +98,7 @@ export default {
                 }
                 let pathname = location.pathname === '/' ? '/' : location.pathname.slice(1);   
                 dispatch({ type:'toggleCurrentMenu', payload:pathname });
-                dispatch({ type:'userAuth', payload:{ dispatch, query:location.query.userid }});
+                dispatch({ type:'userAuth', payload:{ dispatch, query:location.search }});
             })
         }
     },
@@ -113,14 +116,18 @@ export default {
             yield put({ type:'toggleTimeType', payload:'2' });
         },
         *userAuth(action, { put, select, call }){
-            let { global:{ userAuthed, companyId, thirdAgent }} = yield select();
-            let { dispatch, query } = action.payload;
+            let { global:{ userAuthed, thirdAgent }} = yield select();
+            let { dispatch, query } = action.payload || {};
             if ( !userAuthed ){
-                // 获取路由传递的参数userid，如果获取到则自动验证
-                if ( query ){
-                    localStorage.setItem('user_id', query);
+                let matchResult = companyReg.exec(query);
+                let company_id = matchResult ? matchResult[2] : null;
+                let user_id = matchResult ? matchResult[1] : null;
+                let isFrame = matchResult && matchResult[3] === 'frame' ? true : false;
+
+                if ( user_id ){
+                    localStorage.setItem('user_id', user_id);
                 }
-                let { data } = yield call(getUserInfo);
+                let { data } = yield call( matchResult ? agentUserAuth : userAuth, matchResult ? { app_type:6, company_id } : { app_type:6 } );
                 if ( data && data.code === '0'){
                     // 先判断是否是第三方代理商账户
                     if ( !Object.keys(thirdAgent).length ) {
@@ -130,11 +137,14 @@ export default {
                         yield put({ type:'fetchThirdAgent', payload:temp });
                     }
                     let { companys } = data.data;
-                    let currentCompany = companys && companys.length ? companys[0] : {};
-                    if ( WebSocket ) {
-                        socket = createWebSocket(`ws://${apiHost}:${config.socketPort}`, data.data, currentCompany.company_id, dispatch);
+                    let currentCompany = company_id ? companys.filter(i=>i.company_id == company_id )[0] : companys && companys.length ? companys[0] : {};
+                    if ( !WebSocket ) {
+                        window.alert('当前浏览器不支持websocket,推荐使用chrome浏览器');
+                        return ;
                     }
-                    yield put({ type:'getUserInfo', payload:{ data:data.data, currentCompany }});
+                    let config = window.g;
+                    socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}`, data.data, currentCompany.company_id, matchResult ? true : false, dispatch);
+                    yield put({ type:'getUserInfo', payload:{ data:data.data, currentCompany, fromAgent:matchResult ? true : false, isFrame }});
                 } else {
                     yield put({ type:'loginOut'});
                 }
@@ -293,8 +303,8 @@ export default {
         setContainerWidth(state, { payload:{ containerWidth } }){
             return { ...state, containerWidth };
         },
-        getUserInfo(state, { payload:{ data, currentCompany }}){
-            return { ...state, userInfo:data, currentCompany, companyId:currentCompany.company_id, userAuthed:true };
+        getUserInfo(state, { payload:{ data, currentCompany, fromAgent, isFrame }}){
+            return { ...state, userInfo:data, currentCompany, companyId:currentCompany.company_id, fromAgent, userAuthed:true, isFrame };
         },
         getThirdAgent(state, { payload:{ data }}) {
             // console.log(data);

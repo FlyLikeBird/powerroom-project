@@ -33,7 +33,6 @@ hash:true,
         component: '@/pages/index',
         routes:[
             { path:'/', component:'@/pages/monitor_index'},
-            { path:'/ceshi', component:'@/pages/monitor_index/Ceshi2'},
             { path:'/ele_monitor', component:'@/pages/ele_monitor'},
             // { 
             //     path:'/ele_monitor', 
@@ -48,7 +47,6 @@ hash:true,
             { path:'/env_monitor', component:'@/pages/env_monitor'},
             { path:'/sys_setting', component:'@/pages/sys_setting'},
             { path:'/data_report', component:'@/pages/data_report'},
-            { path:'/model', component:'@/pages/self_model/objLoader' }
         ]
     }
     

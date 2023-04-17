@@ -43,30 +43,27 @@ export default {
                 let { data } = yield call(getMonitorInfo, { company_id:companyId, scene_id:currentScene.scene_id });
                 if ( data && data.code === '0'){
                     yield put({ type:'getResult', payload:{ data:data.data }});
-                } else if ( data && data.code === '1001'){
-                    yield put({ type:'user/loginOut'});
-                }
+                } 
             } catch(err){
                 console.log(err);
             }
         },   
-        *fetchMachData(action, { call, put, select }){
-            yield put.resolve({ type:'cancelMachData'})
-            yield put.resolve({ type:'cancelable', task:fetchMachDataCancelable, action:'cancelMachData'});
-            function* fetchMachDataCancelable(params){
-                try {
-                    let { global:{ companyId }} = yield select();
-                    let { register_code, mach_type, resolve, reject  } = action.payload || {};
-                    mach_type = mach_type || 'ele';
-                    let { data } = yield call(getMachData, { company_id:companyId, register_code, mach_type });
-                    if ( data && data.code === '0'){
-                        if ( resolve && typeof resolve === 'function' ) resolve(data.data);
-                    } else {
-                        if ( reject && typeof reject === 'function' ) reject(data.msg);
+        *fetchMachsData(action, { call, put, select, all }){
+            try {
+                let { global:{ companyId }} = yield select();
+                let { ids, resolve, reject  } = action.payload || {};
+                let dataArr = yield all(
+                    ids.map(id=>call(getMachData, { company_id:companyId, register_code:id, mach_type:'ele' }))
+                )
+                if ( dataArr && dataArr.length ) {
+                    if ( resolve ) {
+                        resolve(dataArr.map(i=>i.data.data))
                     }
-                } catch(err){
-                    console.log(err);
+                } else {
+                    if ( reject ) reject('请求数据出错，请稍后再试');
                 }
+            } catch(err){
+                console.log(err);
             }
         }
     },

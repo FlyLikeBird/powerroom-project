@@ -15,8 +15,7 @@ export function getUserLogin(data = {}){
         }); 
 }
 
-// 获取用户信息接口
-export function getUserInfo(data = {}){
+export function userAuth(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
@@ -28,6 +27,20 @@ export function getUserInfo(data = {}){
         body:str
         }); 
 }
+
+export function agentUserAuth(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/agent/getcompanymenu', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
 
 // 判断第三方代理商接口
 export function getThirdAgent(data = {}){

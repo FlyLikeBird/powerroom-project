@@ -27,9 +27,7 @@
     "echarts-for-react": "^3.0.1",
     "html2canvas": "^1.0.0-rc.7",
     "moment": "^2.29.1",
-    "three": "^0.132.2",
-    "three-obj-mtl-loader": "^1.0.3",
-    "three-orbitcontrols": "^2.110.3",
+    "three": "^0.151.3",
     "umi": "^3.4.8",
     "xlsx": "^0.16.9"
   },

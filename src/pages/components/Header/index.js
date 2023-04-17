@@ -29,7 +29,7 @@ function Header({ dispatch, global }){
         window.addEventListener('resize',handleResize);
         function handleResize(){
             if ( containerRef.current && containerRef.current.offsetWidth ){
-                dispatch({ type:'global/setContainerWidth', payload: { containerWidth:containerRef.current.offsetWidth }});
+                dispatch({ type:'global/setContainerWidth', payload:{ containerWidth:window.innerWidth } });
             }
         }
     },[])
@@ -46,7 +46,7 @@ function Header({ dispatch, global }){
             <Menu className={style['header-menu-container']} mode='horizontal' selectedKeys={[currentMenu]} onClick={e=>{
                 dispatch({ type:'global/toggleCurrentMenu', payload:e.key });
                 let targetURL = e.key === '/' ? '' : e.key;
-                history.push('/' + targetURL );
+                history.push('/' + targetURL + ( window.location.search || '') );
             }}>
                 {
                     menu.map((item,index)=>(
